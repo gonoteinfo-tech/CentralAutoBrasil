@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.CentralAutoBrasil" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">#009739</item>
+        <item name="colorPrimaryVariant">#006B28</item>
+        <item name="colorSecondary">#FEDD00</item>
+        <item name="android:statusBarColor">#0A192F</item>
+    </style>
+</resources>

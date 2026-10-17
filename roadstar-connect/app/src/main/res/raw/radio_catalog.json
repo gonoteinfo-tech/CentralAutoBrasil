@@ -18,18 +18,10 @@
   {
     "id": "br-go-anapolis-manchester",
     "name": "Manchester 93,3 FM — Anápolis (GO)",
-    "url": "https://stmbr.com.br:8280/stream",
+    "url": "https://ssl1.transmissaodigital.com:20440/stream",
     "favorite": false,
     "region": "Anápolis",
     "source": "https://www.radiomanchester.com.br/fm/"
-  },
-  {
-    "id": "br-go-anapolis-imprensa",
-    "name": "Imprensa 104,9 FM — Anápolis (GO)",
-    "url": "https://r16.ciclano.io:15030/stream",
-    "favorite": false,
-    "region": "Anápolis",
-    "source": "https://imprensamadureira.com.br/institucional/"
   },
   {
     "id": "br-go-catalao-cultura",

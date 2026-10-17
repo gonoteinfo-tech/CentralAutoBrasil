@@ -1,0 +1,14 @@
+#!/bin/sh
+set -eu
+project_dir="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+wrapper_jar="$project_dir/gradle/wrapper/gradle-wrapper.jar"
+if [ ! -f "$wrapper_jar" ]; then
+    echo 'O wrapper oficial ainda precisa ser baixado. Execute: sh tools/setup-wrapper.sh' >&2
+    exit 1
+fi
+if [ -n "${JAVA_HOME:-}" ]; then
+    java_command="$JAVA_HOME/bin/java"
+else
+    java_command=java
+fi
+exec "$java_command" -classpath "$wrapper_jar" org.gradle.wrapper.GradleWrapperMain "$@"

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/root"
+    android:layout_width="match_parent" android:layout_height="match_parent"
+    android:orientation="vertical" android:background="@color/background">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content"
+        android:gravity="center_vertical" android:paddingHorizontal="20dp" android:paddingTop="12dp" android:paddingBottom="12dp">
+        <ImageView android:layout_width="44dp" android:layout_height="44dp" android:src="@drawable/ic_road" android:importantForAccessibility="no" />
+        <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginStart="12dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/app_name" android:textColor="@color/text_primary" android:textSize="20sp" android:fontFamily="sans-serif-medium" />
+            <TextView style="@style/Text.Body" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="@string/tagline" />
+        </LinearLayout>
+        <com.google.android.material.button.MaterialButton style="@style/Widget.Road.IconButton" android:id="@+id/help_button"
+            android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="@string/help" app:icon="@drawable/ic_help" />
+    </LinearLayout>
+    <FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+    <com.google.android.material.card.MaterialCardView style="@style/Widget.Road.Card" android:id="@+id/mini_player"
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="12dp" android:layout_marginTop="8dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:padding="12dp" android:gravity="center_vertical">
+            <ImageView android:layout_width="32dp" android:layout_height="32dp" android:src="@drawable/ic_music" android:importantForAccessibility="no" />
+            <LinearLayout android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:orientation="vertical" android:layout_marginHorizontal="12dp">
+                <TextView android:id="@+id/player_title" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/choose_radio" android:textColor="@color/text_primary" android:textSize="15sp" android:fontFamily="sans-serif-medium" android:maxLines="2" android:ellipsize="end" />
+                <TextView android:id="@+id/player_state" style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/player_hint" android:accessibilityLiveRegion="polite" />
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButton style="@style/Widget.Road.IconButton" android:id="@+id/play_pause" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="@string/play_pause" app:icon="@drawable/ic_play" />
+            <com.google.android.material.button.MaterialButton style="@style/Widget.Road.IconButton" android:id="@+id/stop_audio" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="@string/stop" app:icon="@drawable/ic_stop" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+    <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/background"
+        app:itemIconTint="@color/nav_colors" app:itemTextColor="@color/nav_colors"
+        app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav" />
+</LinearLayout>

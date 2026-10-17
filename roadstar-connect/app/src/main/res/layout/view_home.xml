@@ -1,0 +1,22 @@
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" android:layout_width="match_parent" android:layout_height="match_parent" android:fillViewport="true">
+    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:paddingHorizontal="20dp" android:paddingBottom="20dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@drawable/hero_background" android:padding="24dp" android:orientation="vertical">
+            <ImageView android:layout_width="60dp" android:layout_height="44dp" android:layout_gravity="end" android:src="@drawable/ic_road" android:alpha="0.7" android:importantForAccessibility="no" />
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="@string/hero_title" android:textSize="34sp" android:fontFamily="sans-serif-medium" android:textColor="@color/text_primary" android:lineSpacingExtra="2dp" />
+            <TextView style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="10dp" android:text="@string/hero_body" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/home_listen" android:layout_width="wrap_content" android:layout_height="wrap_content" android:minHeight="56dp" android:layout_marginTop="20dp" android:text="@string/listen_radio" android:textSize="16sp" app:icon="@drawable/ic_radio" app:cornerRadius="18dp" />
+        </LinearLayout>
+        <TextView style="@style/Text.Heading" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="28dp" android:layout_marginBottom="12dp" android:text="@string/quick_access" />
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:baselineAligned="false">
+            <com.google.android.material.button.MaterialButton android:id="@+id/quick_radio" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="92dp" android:layout_marginEnd="6dp" android:text="@string/radios" android:textSize="17sp" app:icon="@drawable/ic_radio" app:iconGravity="top" app:cornerRadius="24dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/quick_youtube" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="92dp" android:layout_marginStart="6dp" android:text="@string/youtube" android:textSize="17sp" app:icon="@drawable/ic_youtube" app:iconTint="#FF5353" app:iconGravity="top" app:cornerRadius="24dp" />
+        </LinearLayout>
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:baselineAligned="false">
+            <com.google.android.material.button.MaterialButton android:id="@+id/quick_maps" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="92dp" android:layout_marginEnd="6dp" android:text="@string/maps" android:textSize="17sp" app:icon="@drawable/ic_map" app:iconGravity="top" app:cornerRadius="24dp" />
+            <com.google.android.material.button.MaterialButton android:id="@+id/quick_music" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="92dp" android:layout_marginStart="6dp" android:text="@string/music" android:textSize="17sp" app:icon="@drawable/ic_music" app:iconGravity="top" app:cornerRadius="24dp" />
+        </LinearLayout>
+        <TextView style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/youtube_phone" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/home_help" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:layout_marginTop="20dp" android:text="@string/connect_help" app:icon="@drawable/ic_car" app:cornerRadius="20dp" />
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

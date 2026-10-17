@@ -1,0 +1,13 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto" android:id="@+id/root" android:layout_width="match_parent" android:layout_height="match_parent" android:orientation="vertical" android:background="@color/background">
+    <FrameLayout android:id="@+id/content" android:layout_width="match_parent" android:layout_height="0dp" android:layout_weight="1" />
+    <com.google.android.material.card.MaterialCardView style="@style/Widget.Road.Card" android:id="@+id/mini_player" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginHorizontal="12dp">
+        <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:gravity="center_vertical" android:paddingHorizontal="12dp" android:paddingVertical="2dp">
+            <TextView android:id="@+id/player_title" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="@string/choose_radio" android:textColor="@color/text_primary" android:textSize="15sp" android:maxLines="1" android:ellipsize="end" />
+            <TextView android:id="@+id/player_state" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" android:accessibilityLiveRegion="polite" />
+            <com.google.android.material.button.MaterialButton style="@style/Widget.Road.IconButton" android:id="@+id/play_pause" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="@string/play_pause" app:icon="@drawable/ic_play" />
+            <com.google.android.material.button.MaterialButton style="@style/Widget.Road.IconButton" android:id="@+id/stop_audio" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="@string/stop" app:icon="@drawable/ic_stop" />
+            <com.google.android.material.button.MaterialButton style="@style/Widget.Road.IconButton" android:id="@+id/help_button" android:layout_width="48dp" android:layout_height="48dp" android:contentDescription="@string/help" app:icon="@drawable/ic_help" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+    <com.google.android.material.bottomnavigation.BottomNavigationView android:id="@+id/bottom_navigation" android:layout_width="match_parent" android:layout_height="wrap_content" android:background="@color/background" app:itemIconTint="@color/nav_colors" app:itemTextColor="@color/nav_colors" app:labelVisibilityMode="labeled" app:menu="@menu/bottom_nav" />
+</LinearLayout>

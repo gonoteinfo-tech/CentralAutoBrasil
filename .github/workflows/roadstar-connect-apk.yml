@@ -1,0 +1,74 @@
+name: Gerar APK - Roadstar Connect
+
+on:
+  push:
+    branches: [main, codex/roadstar-connect-apk]
+    paths:
+      - 'roadstar-connect/**'
+      - '.github/workflows/roadstar-connect-apk.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roadstar-connect-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: roadstar-connect
+    steps:
+      - name: Baixar projeto
+        uses: actions/checkout@v4
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Preparar Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Instalar plataforma Android 36
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0' 'platform-tools'
+
+      - name: Preparar Gradle 8.13
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      - name: Testar, verificar e compilar
+        run: gradle --no-daemon :app:testDebugUnitTest :app:lintDebug :app:assembleDebug --stacktrace
+
+      - name: Verificar assinatura e preparar download
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/debug/app-debug.apk dist/Roadstar-Connect-0.1.0-debug.apk
+          "$ANDROID_HOME/build-tools/36.0.0/apksigner" verify --verbose dist/Roadstar-Connect-0.1.0-debug.apk
+          cd dist
+          sha256sum Roadstar-Connect-0.1.0-debug.apk > SHA256SUMS.txt
+
+      - name: Disponibilizar APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roadstar-Connect-APK
+          path: roadstar-connect/dist/*
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Guardar relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roadstar-Connect-relatorios
+          path: |
+            roadstar-connect/app/build/reports/
+            roadstar-connect/app/build/test-results/
+          if-no-files-found: ignore
+          retention-days: 14

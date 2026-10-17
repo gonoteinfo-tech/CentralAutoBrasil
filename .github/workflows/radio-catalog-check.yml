@@ -18,6 +18,32 @@ jobs:
     timeout-minutes: 8
     steps:
       - uses: actions/checkout@v4
+      - name: Preparar verificador de audio
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y ffmpeg
+      - name: Procurar fontes locais atualizadas
+        run: |
+          python3 - <<'PY'
+          import concurrent.futures, json, re, urllib.parse, urllib.request
+          def discover(name):
+              query = urllib.parse.urlencode(dict(countrycode='BR', name=name, limit=12))
+              for host in ['de1.api.radio-browser.info', 'nl1.api.radio-browser.info', 'at1.api.radio-browser.info']:
+                  try:
+                      with urllib.request.urlopen('https://'+host+'/json/stations/search?'+query, timeout=10) as r:
+                          data=json.load(r)
+                      return dict(query=name, stations=[{k:s.get(k) for k in ['name','state','homepage','url','url_resolved','lastcheckok']} for s in data])
+                  except Exception as e: error=str(e)
+              return dict(query=name,error=error)
+          with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
+              for result in pool.map(discover,['Manchester','Imprensa']): print(json.dumps(result,ensure_ascii=False))
+          for url in ['https://www.radiomanchester.com.br/fm/', 'https://imprensamadureira.com.br/']:
+              try:
+                  with urllib.request.urlopen(url,timeout=10) as r: html=r.read().decode(errors='replace')
+                  links=re.findall(r'''(?:https?:)?//[^\s<>"']+''',html)
+                  print(json.dumps(dict(page=url,links=list(dict.fromkeys(x for x in links if re.search('stream|m3u8|hoost|audio|transmissao|ciclano|player',x,re.I)))),ensure_ascii=False))
+              except Exception as e: print(url,str(e))
+          PY
       - name: Conferir audio por HTTPS
         working-directory: roadstar-connect
         run: python3 tools/check-radio-streams.py

@@ -4,6 +4,7 @@ import concurrent.futures
 import datetime
 import json
 import pathlib
+import shutil
 import subprocess
 import urllib.parse
 import urllib.request
@@ -46,6 +47,8 @@ def check(station):
 
 
 def main():
+    if shutil.which("ffprobe") is None:
+        raise SystemExit("Install FFmpeg/ffprobe before checking live radio audio.")
     stations = json.loads((ROOT / "app/src/main/res/raw/radio_catalog.json").read_text())
     with concurrent.futures.ThreadPoolExecutor(max_workers=6) as pool:
         results = list(pool.map(check, stations))

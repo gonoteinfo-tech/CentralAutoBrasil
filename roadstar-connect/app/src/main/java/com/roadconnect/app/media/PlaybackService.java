@@ -167,6 +167,11 @@ public final class PlaybackService extends MediaLibraryService {
                 List<MediaItem> resolved = new ArrayList<>();
                 for (MediaItem item : requested) {
                     Station station = find(stations, item.mediaId);
+                    String query = item.requestMetadata.searchQuery;
+                    if (station == null && query != null && !query.trim().isEmpty()) {
+                        List<MediaItem> matches = items("stations", query);
+                        if (!matches.isEmpty()) station = find(stations, matches.get(0).mediaId);
+                    }
                     if (station == null) throw new IllegalArgumentException("Rádio indisponível.");
                     resolved.add(playable(station));
                 }

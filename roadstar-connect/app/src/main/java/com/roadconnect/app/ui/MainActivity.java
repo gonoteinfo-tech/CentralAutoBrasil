@@ -1,5 +1,6 @@
 package com.roadconnect.app.ui;
 
+import android.app.SearchManager;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
@@ -8,6 +9,7 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -106,8 +108,31 @@ public final class MainActivity extends AppCompatActivity {
                 controllerFailed = true;
             }
             renderPlayer();
+            handleMediaSearch(getIntent());
         }, ContextCompat.getMainExecutor(this));
         renderPlayer();
+    }
+
+    @Override protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+        handleMediaSearch(intent);
+    }
+
+    private void handleMediaSearch(Intent request) {
+        if (request == null || controller == null
+                || !MediaStore.INTENT_ACTION_MEDIA_PLAY_FROM_SEARCH.equals(request.getAction())) return;
+        request.setAction(null);
+        navigation.setSelectedItemId(R.id.nav_radios);
+        String query = request.getStringExtra(SearchManager.QUERY);
+        if (query == null || query.trim().isEmpty()) {
+            toast("Diga o nome de uma rádio cadastrada ou escolha uma na lista.");
+            return;
+        }
+        controller.setMediaItem(new MediaItem.Builder().setRequestMetadata(
+                new MediaItem.RequestMetadata.Builder().setSearchQuery(query).build()).build());
+        controller.prepare();
+        controller.play();
     }
 
     @Override protected void onStart() {

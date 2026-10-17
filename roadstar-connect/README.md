@@ -3,10 +3,10 @@
 App Android nativo instalado **no telefone**, com layout escuro, detalhes
 verde-água e quatro abas: Início, Rádios, Navegador e Favoritos.
 
-**Estado desta entrega:** projeto-fonte implementado. O APK ainda não foi
-compilado neste ambiente porque a conexão ao proxy dos downloads falhou e
-Android SDK/Gradle não estavam instalados. A imagem conceitual não é uma
-captura de um app em execução. Consulte [a validação](docs/test-checklist.md).
+O projeto inclui compilação automatizada pelo GitHub Actions, com testes,
+análise do código e verificação da assinatura do APK. Consulte
+[a validação](docs/test-checklist.md) para os resultados e limites dos testes.
+A imagem conceitual não é uma captura de um app em execução.
 
 ## O que cada tela oferece
 
@@ -27,6 +27,23 @@ como um stream MP3/AAC ou uma playlist HLS. Uma página web, playlist PLS ou lin
 `youtube.com/watch` não equivale a um stream de áudio reproduzível. Endereços
 com usuário/senha embutidos são rejeitados. O app não controla o rádio FM físico
 da multimídia e usa a internet do telefone para transmissões online.
+
+## Baixar o APK pelo GitHub
+
+O projeto está na pasta `roadstar-connect/` do repositório
+[CentralAutoBrasil](https://github.com/gonoteinfo-tech/CentralAutoBrasil/tree/codex/roadstar-connect-apk/roadstar-connect),
+na branch `codex/roadstar-connect-apk`.
+
+1. Abra [as compilações do Roadstar Connect](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/workflows/roadstar-connect-apk.yml).
+2. Escolha uma execução concluída com sucesso e baixe o artefato
+   **Roadstar-Connect-APK**. O download pelo GitHub pode exigir login.
+3. Extraia o ZIP e instale `Roadstar-Connect-0.1.0-debug.apk` no telefone.
+   O arquivo `SHA256SUMS.txt` permite conferir a integridade do APK.
+
+O workflow fica na raiz do repositório, em
+`.github/workflows/roadstar-connect-apk.yml`, e compila a pasta deste app.
+Usa Gradle 8.13 instalado pela action; não depende do wrapper ausente.
+Os downloads ficam disponíveis por 30 dias após a execução.
 
 ## Compilar em um computador com Android Studio
 

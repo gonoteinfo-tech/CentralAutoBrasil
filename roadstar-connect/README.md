@@ -8,6 +8,10 @@ análise do código e verificação da assinatura do APK. Consulte
 [a validação](docs/test-checklist.md) para os resultados e limites dos testes.
 A imagem conceitual não é uma captura de um app em execução.
 
+**APK 0.1.0 gerado com sucesso:**
+[baixar o ZIP](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39071846421/artifacts/12115413223)
+ou consultar [a execução verificada](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39071846421).
+
 ## O que cada tela oferece
 
 - **Início:** acesso a rádios, YouTube, Maps/Waze, música e ajuda de conexão.

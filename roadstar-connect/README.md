@@ -8,9 +8,9 @@ análise do código e verificação da assinatura do APK. Consulte
 [a validação](docs/test-checklist.md) para os resultados e limites dos testes.
 A imagem conceitual não é uma captura de um app em execução.
 
-**APK 0.1.0 gerado com sucesso:**
-[baixar o ZIP](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39071846421/artifacts/12115413223)
-ou consultar [a execução verificada](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39071846421).
+**APK 0.1.1 gerado com sucesso — catálogo com 20 rádios:**
+[baixar o ZIP](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072775004/artifacts/12115479407)
+ou consultar [a execução verificada](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072775004).
 
 ## O que cada tela oferece
 
@@ -30,6 +30,7 @@ O app inclui uma seleção de rádios de Anápolis, de outras cidades de Goiás
 e de redes brasileiras. Na primeira abertura da versão 0.1.1, o catálogo é
 adicionado uma única vez, preservando rádios cadastradas, nomes editados e
 favoritos. Excluir uma emissora depois não a faz reaparecer ao reabrir o app.
+Veja [as 20 rádios incluídas e as fontes](docs/radios.md).
 
 Você também pode adicionar o endereço HTTPS direto fornecido pela rádio,
 como um stream MP3/AAC ou uma playlist HLS. Uma página web, playlist PLS ou link
@@ -46,7 +47,7 @@ na branch `codex/roadstar-connect-apk`.
 1. Abra [as compilações do Roadstar Connect](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/workflows/roadstar-connect-apk.yml).
 2. Escolha uma execução concluída com sucesso e baixe o artefato
    **Roadstar-Connect-APK**. O download pelo GitHub pode exigir login.
-3. Extraia o ZIP e instale `Roadstar-Connect-0.1.0-debug.apk` no telefone.
+3. Extraia o ZIP e instale `Roadstar-Connect-0.1.1-debug.apk` no telefone.
    O arquivo `SHA256SUMS.txt` permite conferir a integridade do APK.
 
 O workflow fica na raiz do repositório, em
@@ -89,6 +90,10 @@ Os downloads ficam disponíveis por 30 dias após a execução.
 
 Um APK de depuração usa a chave local gerada pelo Android SDK. Esta entrega
 não publica o app nem gera assinatura para distribuição na Play Store.
+Execuções independentes da CI podem gerar chaves de teste diferentes. Se o
+Android recusar a atualização por conflito de assinatura, a instalação exige
+remover o APK anterior; essa remoção apaga os rádios e favoritos salvos nele.
+Sem conflito de assinatura, a migração do catálogo mantém os dados existentes.
 
 ## Testes sem Android SDK
 

@@ -19,7 +19,22 @@ visual gerada é um conceito, não uma captura de um aplicativo em execução.
 - `sh -n gradlew tools/setup-wrapper.sh tools/check-core.sh`: sintaxe dos scripts aprovada.
 - O pacote de fontes contém recursos, instruções e prévia conceitual; o APK é distribuído separadamente pelo GitHub Actions. O projeto não contém um `gradle-wrapper.jar` fictício.
 
-## Compilação verificada no GitHub Actions
+## Catálogo e APK 0.1.1 — verificação final
+
+- Código compilado: `8ef90d8fb95b15f32e95fbccded6c8714ac27a6a`.
+- Catálogo: 20 emissoras, sendo 3 de Anápolis, 5 de outras cidades de Goiás e 12 de outras regiões do Brasil. [Lista e fontes](radios.md).
+- Checagem real das transmissões: [execução 39072774934](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072774934), concluída com sucesso. **20/20** amostras apresentaram áudio AAC/MP3 por HTTPS, incluindo streams HLS. Não foram guardadas amostras de áudio.
+- Verificações portáteis: **26 de URLs + 6 de mesclagem do catálogo** passaram. O teste primeiro falhou por ausência de StationCatalog; depois passou com a implementação.
+- A mesclagem verifica preservação de nomes/IDs/favoritos, ordem, deduplicação por ID ou URL, lista original intacta, instalação nova e idempotência. Persistência Android e execução de listeners continuam sem teste em dispositivo.
+- Java: 8 arquivos analisados sem erro de sintaxe; XML, JSON e sintaxe Python conferidos.
+- Build: [execução 39072775004](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072775004), **BUILD SUCCESSFUL in 2m 5s**. Passaram CoreChecks, `testDebugUnitTest`, `lintDebug` e `assembleDebug`.
+- Assinatura: `apksigner verify --verbose` retornou **Verifies**, com APK Signature Scheme v2 válido.
+- Download: [Roadstar-Connect-APK](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072775004/artifacts/12115479407), ZIP de 8.102.623 bytes com `Roadstar-Connect-0.1.1-debug.apk` e `SHA256SUMS.txt`.
+- A revisão independente não encontrou bloqueios concretos na migração. O catálogo e sua versão são gravados juntos; dados salvos inválidos não são substituídos; exclusões e edições posteriores são mantidas.
+- Compatibilidade com Android 17, reprodução no telefone, persistência real e integração com a Roadstar continuam pendentes de teste físico. Checar amostras no servidor não equivale a testar o player Android.
+- APKs de depuração gerados em execuções separadas podem ter assinaturas diferentes. Conflito de assinatura pode exigir desinstalação, que apaga os dados locais; a preservação da migração pressupõe uma atualização aceita pelo Android.
+
+## Compilação anterior — versão 0.1.0
 
 - Data: 17/10/2026, execução [39071846421](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39071846421), concluída com sucesso.
 - Commit do código compilado: `5f8f4237793d31a175adeb109010eadd1f507e31`, branch `codex/roadstar-connect-apk`.
@@ -70,6 +85,9 @@ Todos os casos abaixo estão **não executados** até existir evidência no disp
 | Caso | Resultado esperado |
 |---|---|
 | persistencia_apos_reabrir | Rádios e favoritos reaparecem após fechar e abrir. |
+| catalogo_inicial | Primeira abertura da versão 0.1.1 adiciona 20 rádios prontas; favoritos começam vazios. |
+| migracao_catalogo | Cadastro anterior, nomes editados e favoritos são preservados; IDs e URLs existentes não são duplicados. |
+| excluir_radio_incluida | Rádio do catálogo excluída não reaparece ao reabrir o app. |
 | editar_sem_mudar_id | Alteração mantém posição e favorito da fonte. |
 | excluir_sem_apagar_outras | Somente a fonte confirmada é removida. |
 | catalogo_vazio | Estado vazio útil, sem rádio fictícia ou carregamento infinito. |

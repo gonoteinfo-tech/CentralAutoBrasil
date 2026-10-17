@@ -1,0 +1,170 @@
+[
+  {
+    "id": "br-go-anapolis-96fm",
+    "name": "96 FM 96,3 — Anápolis (GO)",
+    "url": "https://cast4.hoost.com.br:20079/stream",
+    "favorite": false,
+    "region": "Anápolis",
+    "source": "https://radio96fm.net/"
+  },
+  {
+    "id": "br-go-anapolis-sao-francisco",
+    "name": "São Francisco 97,7 FM — Anápolis (GO)",
+    "url": "https://cast.hoost.com.br:20150/stream",
+    "favorite": false,
+    "region": "Anápolis",
+    "source": "https://radiosaochico.com.br/radio-ao-vivo-e-online-player/"
+  },
+  {
+    "id": "br-go-anapolis-manchester",
+    "name": "Manchester 93,3 FM — Anápolis (GO)",
+    "url": "https://stmbr.com.br:8280/stream",
+    "favorite": false,
+    "region": "Anápolis",
+    "source": "https://www.radiomanchester.com.br/fm/"
+  },
+  {
+    "id": "br-go-anapolis-imprensa",
+    "name": "Imprensa 104,9 FM — Anápolis (GO)",
+    "url": "https://r16.ciclano.io:15030/stream",
+    "favorite": false,
+    "region": "Anápolis",
+    "source": "https://imprensamadureira.com.br/institucional/"
+  },
+  {
+    "id": "br-go-catalao-cultura",
+    "name": "Cultura 101,1 FM — Catalão (GO)",
+    "url": "https://cast.hoost.com.br:20153/stream",
+    "favorite": false,
+    "region": "Goiás",
+    "source": "https://radioculturaonline.com.br/"
+  },
+  {
+    "id": "br-go-goiania-alpha",
+    "name": "Alpha FM 102,1 — Goiânia (GO)",
+    "url": "https://ice.fabricahost.com.br/alphafm1021",
+    "favorite": false,
+    "region": "Goiás",
+    "source": "https://alphagoiania.com.br/"
+  },
+  {
+    "id": "br-go-goiania-89rock",
+    "name": "89 A Rádio Rock — Goiânia (GO)",
+    "url": "https://ice.fabricahost.com.br/89aradiorockgo",
+    "favorite": false,
+    "region": "Goiás",
+    "source": "https://89goiania.com.br/89-goiania/"
+  },
+  {
+    "id": "br-go-goiania-cbn",
+    "name": "CBN — Goiânia (GO)",
+    "url": "https://live.ojc.com.br/e9cd_3/myStream.m3u8",
+    "favorite": false,
+    "region": "Goiás",
+    "source": "https://github.com/junguler/m3u-radio-music-playlists/blob/main/allradio.net/Brazilian-portuguese.m3u"
+  },
+  {
+    "id": "br-go-goiania-terra",
+    "name": "Terra FM 104,3 — Goiânia (GO)",
+    "url": "https://12.stmip.net:2956/stream",
+    "favorite": false,
+    "region": "Goiás",
+    "source": "https://radioterrafm.com.br/"
+  },
+  {
+    "id": "br-sp-cbn",
+    "name": "CBN — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/CBN_SPAAC_SC",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://cbn.globoradio.globo.com/servicos/mobile/MOBILE.htm"
+  },
+  {
+    "id": "br-sp-bandnews",
+    "name": "BandNews FM — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/BANDNEWSFM_SPAAC_SC",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://www.band.com.br/radios/bandnews-fm"
+  },
+  {
+    "id": "br-sp-bandfm",
+    "name": "Band FM — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/BANDFM_SPAAC.m3u8",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://www.band.com.br/band-fm"
+  },
+  {
+    "id": "br-sp-nativa",
+    "name": "Nativa FM — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/NATIVA_SPAAC.m3u8",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://www.band.com.br/radios/nativa/sao-paulo"
+  },
+  {
+    "id": "br-sp-mix",
+    "name": "Mix FM — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/MIXFM_SAOPAULOAAC_SC",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://aovivo.radiomixfm.com.br/"
+  },
+  {
+    "id": "br-sp-antena1",
+    "name": "Antena 1 — São Paulo (SP)",
+    "url": "https://antenaone.crossradio.com.br/stream/1;",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://www.antena1.com.br/ouvir-radio-online"
+  },
+  {
+    "id": "br-sp-alpha",
+    "name": "Alpha FM — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_ALPHAFM_ADP_SC",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://alphafm.com.br/"
+  },
+  {
+    "id": "br-mg-itatiaia",
+    "name": "Itatiaia — Belo Horizonte (MG)",
+    "url": "https://8903.brasilstream.com.br/stream",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://www.itatiaia.com.br/"
+  },
+  {
+    "id": "br-rs-gaucha",
+    "name": "Gaúcha — Porto Alegre (RS)",
+    "url": "https://1132747t.ha.azioncdn.net/primary/gaucha_rbs.sdp/playlist.m3u8",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://gauchazh.clicrbs.com.br/"
+  },
+  {
+    "id": "br-rj-jbfm",
+    "name": "JBFM — Rio de Janeiro (RJ)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/JBFMAAC_SC",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://jb.fm/"
+  },
+  {
+    "id": "br-sp-89rock",
+    "name": "89 FM A Rádio Rock — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_89FM_ADP_SC",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://www.radiorock.com.br/"
+  },
+  {
+    "id": "br-sp-kiss",
+    "name": "Kiss FM — São Paulo (SP)",
+    "url": "https://playerservices.streamtheworld.com/api/livestream-redirect/RADIO_KISSFM_ADP.m3u8",
+    "favorite": false,
+    "region": "Brasil",
+    "source": "https://kissfm.com.br/aovivo/"
+  }
+]

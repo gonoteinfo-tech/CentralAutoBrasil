@@ -1,0 +1,30 @@
+name: Conferir transmissoes de radio
+
+on:
+  push:
+    branches: [codex/roadstar-connect-apk]
+    paths:
+      - 'roadstar-connect/app/src/main/res/raw/radio_catalog.json'
+      - 'roadstar-connect/tools/check-radio-streams.py'
+      - '.github/workflows/radio-catalog-check.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  streams:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Conferir audio por HTTPS
+        working-directory: roadstar-connect
+        run: python3 tools/check-radio-streams.py
+      - name: Guardar resultado
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roadstar-radio-stream-check
+          path: roadstar-connect/reports/radio-stream-check.json
+          retention-days: 14

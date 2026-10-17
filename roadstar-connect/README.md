@@ -26,7 +26,12 @@ exigir o navegador externo ou o app oficial para login e determinados vídeos.
 Não há garantia de reprodução de todos os conteúdos. Vídeos devem ser usados
 com o veículo estacionado; o app não detecta o movimento do carro.
 
-O catálogo começa vazio. Adicione o endereço HTTPS direto fornecido pela rádio,
+O app inclui uma seleção de rádios de Anápolis, de outras cidades de Goiás
+e de redes brasileiras. Na primeira abertura da versão 0.1.1, o catálogo é
+adicionado uma única vez, preservando rádios cadastradas, nomes editados e
+favoritos. Excluir uma emissora depois não a faz reaparecer ao reabrir o app.
+
+Você também pode adicionar o endereço HTTPS direto fornecido pela rádio,
 como um stream MP3/AAC ou uma playlist HLS. Uma página web, playlist PLS ou link
 `youtube.com/watch` não equivale a um stream de áudio reproduzível. Endereços
 com usuário/senha embutidos são rejeitados. O app não controla o rádio FM físico
@@ -98,7 +103,7 @@ as telas Android ou a integração física com a Roadstar.
 
 ## Conectar ao Android Auto
 
-1. Abra o app no telefone e adicione uma rádio válida.
+1. Abra o app no telefone e escolha uma rádio do catálogo ou adicione uma válida.
 2. Conecte o telefone à Roadstar pelo método Android Auto disponível na central.
 3. Procure **Roadstar Connect** entre os aplicativos de mídia.
 4. Para APKs de teste instalados fora da Play Store, a documentação do Google

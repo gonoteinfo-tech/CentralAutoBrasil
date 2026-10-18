@@ -257,17 +257,25 @@ public final class ReceiverIntegrationTest {
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
             boolean formatSent = false;
             long originNs = System.nanoTime();
-            for (int frame = 0; frame < 150; frame++) {
-                long ptsNs = originNs + frame * 1_000_000_000L / FPS;
-                long waitNs = ptsNs - System.nanoTime();
+            long nextFrameNs = originNs;
+            int renderedFrames = 0;
+            // Like MediaProjection, timestamp actual captured frames. A software emulator
+            // can miss the 30 fps target; assigning ideal timestamps would manufacture lag.
+            for (int frame = 0; frame < 150 && System.nanoTime() - originNs < 5_000_000_000L; frame++) {
+                long waitNs = nextFrameNs - System.nanoTime();
                 if (waitNs > 0) TimeUnit.NANOSECONDS.sleep(waitNs);
                 if (Thread.currentThread().isInterrupted()) throw new InterruptedException();
+                long ptsNs = System.nanoTime();
+                nextFrameNs = ptsNs + 1_000_000_000L / FPS;
                 egl.renderRed(ptsNs);
+                renderedFrames++;
                 formatSent = drainEncoder(encoder, info, output, formatSent);
                 if (formatSent) MirrorWire.writeFrame(output, MirrorWire.AUDIO, ptsNs / 1_000,
                         tonePcm(frame * 1600));
                 output.flush();
             }
+            android.util.Log.i("RoadstarReceiverTest", "Real-time source rendered " + renderedFrames
+                    + " frames in " + ((System.nanoTime() - originNs) / 1_000_000) + " ms");
             encoder.signalEndOfInputStream();
             long deadline = SystemClock.elapsedRealtime() + 3_000;
             while ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) == 0 && SystemClock.elapsedRealtime() < deadline) {

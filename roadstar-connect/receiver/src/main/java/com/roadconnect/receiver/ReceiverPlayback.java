@@ -90,7 +90,8 @@ final class ReceiverPlayback implements AutoCloseable {
             throw new IOException("Timestamp inválido");
         long ahead = nanos - System.nanoTime();
         if (ahead > 3_000_000_000L || ahead < -3_000_000_000L)
-            throw new IOException("Transmissão atrasada. Reconecte em 720p.");
+            throw new IOException("Transmissão atrasada. Reconecte em 720p. ("
+                    + (ahead / 1_000_000L) + " ms, fila de vídeo: " + videoQueue.size() + ")");
         return nanos;
     }
 

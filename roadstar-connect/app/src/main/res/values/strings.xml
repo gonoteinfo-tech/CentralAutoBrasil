@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Roadstar Connect</string>
+    <string name="mirror_screen">Espelhar tela</string>
+    <string name="mirror_hint">Por Wi-Fi, com o receptor Roadstar instalado na central. Use com o veículo estacionado.</string>
     <string name="tagline">Seu som. Seu caminho.</string>
     <string name="home">Início</string>
     <string name="radios">Rádios</string>

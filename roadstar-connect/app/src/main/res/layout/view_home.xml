@@ -17,6 +17,8 @@
             <com.google.android.material.button.MaterialButton android:id="@+id/quick_music" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:minHeight="92dp" android:layout_marginStart="6dp" android:text="@string/music" android:textSize="17sp" app:icon="@drawable/ic_music" app:iconGravity="top" app:cornerRadius="24dp" />
         </LinearLayout>
         <TextView style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="8dp" android:text="@string/youtube_phone" />
+        <com.google.android.material.button.MaterialButton android:id="@+id/quick_mirror" style="@style/Widget.Material3.Button.TonalButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:layout_marginTop="20dp" android:text="@string/mirror_screen" app:icon="@drawable/ic_cast" app:cornerRadius="20dp" />
+        <TextView style="@style/Text.Body" android:layout_width="match_parent" android:layout_height="wrap_content" android:layout_marginTop="6dp" android:text="@string/mirror_hint" />
         <com.google.android.material.button.MaterialButton android:id="@+id/home_help" style="@style/Widget.Material3.Button.OutlinedButton" android:layout_width="match_parent" android:layout_height="wrap_content" android:minHeight="64dp" android:layout_marginTop="20dp" android:text="@string/connect_help" app:icon="@drawable/ic_car" app:cornerRadius="20dp" />
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

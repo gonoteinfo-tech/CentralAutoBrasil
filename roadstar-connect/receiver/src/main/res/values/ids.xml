@@ -1,0 +1,6 @@
+<resources>
+    <item name="receiver_code" type="id" />
+    <item name="receiver_fingerprint" type="id" />
+    <item name="receiver_status" type="id" />
+    <item name="receiver_video" type="id" />
+</resources>

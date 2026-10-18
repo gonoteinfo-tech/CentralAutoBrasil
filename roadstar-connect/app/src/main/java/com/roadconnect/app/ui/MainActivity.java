@@ -39,6 +39,7 @@ import com.roadconnect.app.data.Station;
 import com.roadconnect.app.data.StationStore;
 import com.roadconnect.app.data.UrlPolicy;
 import com.roadconnect.app.media.PlaybackService;
+import com.roadconnect.app.mirror.MirrorActivity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -189,6 +190,10 @@ public final class MainActivity extends AppCompatActivity {
             content.findViewById(R.id.quick_youtube).setOnClickListener(view -> navigation.setSelectedItemId(R.id.nav_browser));
             content.findViewById(R.id.quick_maps).setOnClickListener(view -> showMaps());
             content.findViewById(R.id.quick_music).setOnClickListener(view -> showMusic());
+            content.findViewById(R.id.quick_mirror).setOnClickListener(view -> {
+                if (controller != null) controller.pause();
+                startActivity(new Intent(this, MirrorActivity.class));
+            });
             content.findViewById(R.id.home_help).setOnClickListener(view -> showHelp());
         } else {
             renderLibrary(tab == R.id.nav_favorites);

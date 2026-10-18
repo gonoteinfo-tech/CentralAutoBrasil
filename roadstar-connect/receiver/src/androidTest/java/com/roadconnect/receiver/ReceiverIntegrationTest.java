@@ -21,6 +21,7 @@ import android.opengl.EGLExt;
 import android.opengl.EGLSurface;
 import android.opengl.GLES20;
 import android.os.SystemClock;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceView;
 import android.widget.TextView;
@@ -88,10 +89,12 @@ public final class ReceiverIntegrationTest {
                 try {
                     awaitVideoAndAudio(scenario, stream);
                     stream.get(12, TimeUnit.SECONDS);
+                    Log.i("RoadstarReceiverTest", "AVC/PCM producer finished, including encoder EOS");
                     String status = snapshot(scenario).status;
                     assertFalse("Receiver reported an error: " + status,
                             status.contains("Não foi possível") || status.contains("encerrada"));
                     // Keep the sender connected: only closing the visible receiver should end TLS.
+                    Log.i("RoadstarReceiverTest", "All media assertions passed; explicitly closing receiver Activity");
                     scenario.close();
                     assertPeerClosed(input, socket);
                 } finally {
@@ -206,24 +209,33 @@ public final class ReceiverIntegrationTest {
         long deadline = SystemClock.elapsedRealtime() + 10_000;
         boolean redSeen = false;
         boolean audioActive = false;
+        String lastStatus = "";
+        int lastPixel = 0;
         do {
             if (stream.isDone()) stream.get(); // Surface encoder failures must fail the test, never skip it.
             ReceiverUi ui = snapshot(scenario);
+            lastStatus = ui.status;
             Bitmap screenshot = InstrumentationRegistry.getInstrumentation().getUiAutomation().takeScreenshot();
             assertNotNull("Android screenshot must include the decoded SurfaceView", screenshot);
             try {
                 assertTrue(ui.centerX < screenshot.getWidth() && ui.centerY < screenshot.getHeight());
-                int pixel = screenshot.getPixel(ui.centerX, ui.centerY);
-                redSeen |= Color.red(pixel) > 130 && Color.green(pixel) < 100 && Color.blue(pixel) < 100;
+                lastPixel = screenshot.getPixel(ui.centerX, ui.centerY);
+                redSeen |= Color.red(lastPixel) > 130 && Color.green(lastPixel) < 100 && Color.blue(lastPixel) < 100;
             } finally {
                 screenshot.recycle();
             }
             audioActive |= audio.isMusicActive();
-            if (redSeen && audioActive) return;
+            if (redSeen && audioActive) {
+                Log.i("RoadstarReceiverTest", "Decoded red AVC pixel and active PCM observed; status="
+                        + lastStatus + ", pixel=#" + Integer.toHexString(lastPixel) + ", audioActive=" + audioActive);
+                return;
+            }
             Thread.sleep(100);
         } while (SystemClock.elapsedRealtime() < deadline);
-        assertTrue("A real decoded red AVC frame never reached the receiver SurfaceView", redSeen);
-        assertTrue("PCM frames never activated media audio playback on the receiver", audioActive);
+        String diagnostics = "; lastStatus=" + lastStatus + ", lastPixel=#" + Integer.toHexString(lastPixel)
+                + ", redSeen=" + redSeen + ", audioActive=" + audioActive;
+        assertTrue("A real decoded red AVC frame never reached the receiver SurfaceView" + diagnostics, redSeen);
+        assertTrue("PCM frames never activated media audio playback on the receiver" + diagnostics, audioActive);
     }
 
     private static void sendAvcAndPcm(DataOutputStream output) throws Exception {

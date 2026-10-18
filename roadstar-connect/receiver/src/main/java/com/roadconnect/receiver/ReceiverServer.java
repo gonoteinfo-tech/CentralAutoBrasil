@@ -43,6 +43,7 @@ final class ReceiverServer implements AutoCloseable {
     private final Surface surface;
     private final String code;
     private final Listener listener;
+    private final Object connectionLock = new Object();
     private volatile boolean running = true;
     private volatile SSLServerSocket serverSocket;
     private volatile SSLSocket client;
@@ -68,7 +69,10 @@ final class ReceiverServer implements AutoCloseable {
             ReceiverPlayback.Decoders decoders = ReceiverPlayback.findDecoders();
             SSLContext ssl = createTlsContext();
             SSLServerSocket opened = (SSLServerSocket) ssl.getServerSocketFactory().createServerSocket(PORT, 1);
-            serverSocket = opened;
+            synchronized (connectionLock) {
+                if (running) serverSocket = opened;
+            }
+            if (!running) { opened.close(); return; }
             List<String> allowed = new ArrayList<>();
             for (String protocol : opened.getSupportedProtocols()) {
                 if (protocol.equals("TLSv1.2")) allowed.add(protocol);
@@ -88,31 +92,40 @@ final class ReceiverServer implements AutoCloseable {
                 SSLSocket accepted;
                 try { accepted = (SSLSocket) opened.accept(); }
                 catch (SocketTimeoutException waiting) { continue; }
-                if (!running) { accepted.close(); break; }
-                client = accepted;
+                boolean acceptClient;
+                synchronized (connectionLock) {
+                    acceptClient = running;
+                    if (acceptClient) client = accepted;
+                }
+                if (!acceptClient) { accepted.close(); break; }
                 // Only RFC 1918 IPv4 addresses can send to the local receiver.
                 if (!(accepted.getInetAddress() instanceof Inet4Address)
                         || !accepted.getInetAddress().isSiteLocalAddress()) {
                     accepted.close();
-                    client = null;
+                    synchronized (connectionLock) {
+                        if (client == accepted) client = null;
+                    }
                     continue;
                 }
                 serveClient(accepted, decoders);
-                client = null;
                 if (running) listener.onStatus(connectionStatus(decoders));
             }
         } catch (Exception error) {
             if (running) listener.onStatus("Não foi possível iniciar: " + message(error));
         } finally {
             disconnectSender();
-            SSLServerSocket opened = serverSocket;
-            serverSocket = null;
+            SSLServerSocket opened;
+            synchronized (connectionLock) {
+                opened = serverSocket;
+                serverSocket = null;
+            }
             if (opened != null) try { opened.close(); } catch (IOException ignored) { }
         }
     }
 
     private void serveClient(SSLSocket socket, ReceiverPlayback.Decoders decoders) {
         boolean authenticated = false;
+        ReceiverPlayback active = null;
         try (SSLSocket ignored = socket) {
             socket.setSoTimeout(15_000);
             socket.setTcpNoDelay(true);
@@ -127,7 +140,6 @@ final class ReceiverServer implements AutoCloseable {
             output.flush();
             socket.setSoTimeout(30_000);
             listener.onStatus("Telefone autorizado • aguardando vídeo");
-            ReceiverPlayback active = null;
             boolean formatSeen = false;
             while (running && !socket.isClosed()) {
                 MirrorWire.Frame frame = MirrorWire.readFrame(input);
@@ -138,9 +150,12 @@ final class ReceiverServer implements AutoCloseable {
                         String codecName = decoders.decoderFor(format.width, format.height);
                         if (codecName == null) throw new IOException("Resolução não suportada pela central");
                         active = new ReceiverPlayback(context, surface, codecName, format,
-                                () -> closeSocket(socket));
-                        playback = active;
-                        active.start();
+                                () -> releaseAsync(null, socket, null));
+                        synchronized (connectionLock) {
+                            if (!running || client != socket) throw new IOException("Sessão encerrada");
+                            playback = active;
+                            active.start();
+                        }
                         formatSeen = true;
                         listener.onStatus("Espelhando • " + format.width + " × " + format.height);
                         break;
@@ -163,9 +178,11 @@ final class ReceiverServer implements AutoCloseable {
                 android.util.Log.w("RoadstarReceiver", "TLS or pairing handshake failed", error);
             if (running && authenticated) listener.onStatus("Conexão encerrada: " + message(error));
         } finally {
-            ReceiverPlayback old = playback;
-            playback = null;
-            if (old != null) old.close();
+            synchronized (connectionLock) {
+                if (playback == active) playback = null;
+                if (client == socket) client = null;
+            }
+            if (active != null) active.close();
         }
     }
 
@@ -242,15 +259,42 @@ final class ReceiverServer implements AutoCloseable {
         try { socket.close(); } catch (IOException ignored) { }
     }
     void disconnectSender() {
-        SSLSocket socket = client;
-        if (socket != null) closeSocket(socket);
-        ReceiverPlayback current = playback;
-        if (current != null) current.close();
+        SSLSocket oldClient;
+        ReceiverPlayback oldPlayback;
+        synchronized (connectionLock) {
+            oldClient = client;
+            oldPlayback = playback;
+            client = null;
+            playback = null;
+        }
+        releaseAsync(null, oldClient, oldPlayback);
     }
+
     @Override public void close() {
-        running = false;
-        SSLServerSocket opened = serverSocket;
-        if (opened != null) try { opened.close(); } catch (IOException ignored) { }
-        disconnectSender();
+        SSLServerSocket oldServer;
+        SSLSocket oldClient;
+        ReceiverPlayback oldPlayback;
+        synchronized (connectionLock) {
+            running = false;
+            oldServer = serverSocket;
+            oldClient = client;
+            oldPlayback = playback;
+            serverSocket = null;
+            client = null;
+            playback = null;
+        }
+        releaseAsync(oldServer, oldClient, oldPlayback);
+    }
+
+    private static void releaseAsync(SSLServerSocket oldServer, SSLSocket oldClient,
+                                     ReceiverPlayback oldPlayback) {
+        if (oldServer == null && oldClient == null && oldPlayback == null) return;
+        // TLS close may write close_notify. Snapshot the old objects before leaving the UI
+        // thread: a delayed cleanup must never look up and close a newer connection.
+        new Thread(() -> {
+            if (oldPlayback != null) oldPlayback.close();
+            if (oldServer != null) try { oldServer.close(); } catch (IOException ignored) { }
+            if (oldClient != null) closeSocket(oldClient);
+        }, "receiver-cleanup").start();
     }
 }

@@ -151,8 +151,7 @@ jobs:
             adb shell am instrument -w -r com.roadconnect.receiver.test/androidx.test.runner.AndroidJUnitRunner > roadstar-connect/instrumentation.log
             adb logcat -d > roadstar-connect/receiver-logcat.txt
             cat roadstar-connect/instrumentation.log
-            python3 -c "from pathlib import Path; p=Path('roadstar-connect/receiver-logcat.txt'); print('\n'.join([l for l in p.read_text().splitlines() if any(t in l for t in ['RoadstarReceiver','CryptoUpcalls','AndroidRuntime','TestRunner'])][-120:]))"
-            python3 -c "from pathlib import Path; s=Path('roadstar-connect/instrumentation.log').read_text(); assert 'OK (' in s and 'FAILURES!!!' not in s, s"
+            python3 -c "from pathlib import Path; p=Path('roadstar-connect/receiver-logcat.txt'); print('\n'.join([l for l in p.read_text().splitlines() if any(t in l for t in ['RoadstarReceiver','CryptoUpcalls','AndroidRuntime','TestRunner','MediaCodec','CCodec','ACodec','OMX'])][-240:]))"
             adb install -r roadstar-connect/test-apks/Roadstar-Connect-0.2.0-debug.apk
             adb install -r roadstar-connect/test-apks/app-debug-androidTest.apk
             adb shell input keyevent 82
@@ -160,6 +159,9 @@ jobs:
             adb logcat -d > roadstar-connect/sender-logcat.txt
             cat roadstar-connect/sender-instrumentation.log
             python3 -c "from pathlib import Path; p=Path('roadstar-connect/sender-logcat.txt'); print('\n'.join([l for l in p.read_text().splitlines() if any(t in l for t in ['Roadstar','AndroidRuntime','TestRunner','MediaProjection','AudioRecord'])][-140:]))"
+            python3 -c "import time; from pathlib import Path; p=Path('roadstar-connect/sender-sink-report.json'); end=time.monotonic()+15; exec('while not p.exists() and time.monotonic()<end: time.sleep(0.1)')"
+            cat roadstar-connect/sender-sink.log
+            python3 -c "from pathlib import Path; s=Path('roadstar-connect/instrumentation.log').read_text(); assert 'OK (' in s and 'FAILURES!!!' not in s, s"
             python3 -c "from pathlib import Path; s=Path('roadstar-connect/sender-instrumentation.log').read_text(); assert 'OK (' in s and 'FAILURES!!!' not in s, s"
             python3 -c "import json; from pathlib import Path; r=json.loads(Path('roadstar-connect/sender-sink-report.json').read_text()); assert r['ok'], r; print(r)"
       - name: Guardar resultado no emulador

@@ -1,0 +1,30 @@
+name: Diagnosticar receptor
+on:
+  push:
+    branches: [codex/roadstar-connect-apk]
+    paths: ['.github/workflows/mirror-diagnostics.yml']
+permissions:
+  contents: read
+  actions: read
+jobs:
+  inspect:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Roadstar-receptor-emulador
+          run-id: 39128683159
+          github-token: ${{ github.token }}
+          path: report
+      - name: Mostrar registros do receptor
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          lines=next(Path('report').rglob('receiver-logcat.txt')).read_text(errors='replace').splitlines()
+          keys=['keystore','SSL','ssl','Conscrypt','Roadstar','ReceiverServer','KeyStore','Signature','rsa','RSA','KeyMint','Keymaster']
+          keep=set()
+          for i,s in enumerate(lines):
+              if any(x in s for x in keys):
+                  keep.update(range(max(0,i-2),min(len(lines),i+7)))
+          print('\n'.join(lines[i] for i in sorted(keep))[-35000:])
+          PY

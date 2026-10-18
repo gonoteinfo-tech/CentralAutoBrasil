@@ -89,9 +89,11 @@ final class ReceiverPlayback implements AutoCloseable {
         if (((baseNanos ^ nanos) & (deltaNanos ^ nanos)) < 0)
             throw new IOException("Timestamp inválido");
         long ahead = nanos - System.nanoTime();
-        if (ahead > 3_000_000_000L || ahead < -3_000_000_000L)
-            throw new IOException("Transmissão atrasada. Reconecte em 720p. ("
-                    + (ahead / 1_000_000L) + " ms, fila de vídeo: " + videoQueue.size() + ")");
+        if (ahead > 3_000_000_000L || ahead < -3_000_000_000L) {
+            android.util.Log.w("RoadstarReceiver", "AV timing outside window: "
+                    + (ahead / 1_000_000L) + " ms; queued video=" + videoQueue.size());
+            throw new IOException("Transmissão atrasada. Reconecte em 720p.");
+        }
         return nanos;
     }
 

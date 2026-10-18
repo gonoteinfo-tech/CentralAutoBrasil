@@ -136,6 +136,7 @@ public final class ReceiverActivity extends Activity implements SurfaceHolder.Ca
         super.onWindowFocusChanged(hasFocus);
         ReceiverServer current = server;
         if (!hasFocus && current != null) {
+            android.util.Log.i("RoadstarReceiver", "Receiver window lost focus; disconnecting sender");
             // Stop captured sound when another window obscures the receiver.
             current.disconnectSender();
         }
@@ -153,6 +154,7 @@ public final class ReceiverActivity extends Activity implements SurfaceHolder.Ca
         server = new ReceiverServer(getApplicationContext(), video.getHolder().getSurface(), code,
                 new ReceiverServer.Listener() {
                     @Override public void onStatus(String message) {
+                        android.util.Log.i("RoadstarReceiver", "Receiver status: " + message);
                         runOnUiThread(() -> {
                             if (serverGeneration == generation && started) {
                                 status.setText(message);

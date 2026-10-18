@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.Inet4Address;
 import java.net.SocketTimeoutException;
 import java.security.KeyPairGenerator;
@@ -68,7 +69,7 @@ final class ReceiverServer implements AutoCloseable {
         try {
             ReceiverPlayback.Decoders decoders = ReceiverPlayback.findDecoders();
             SSLContext ssl = createTlsContext();
-            SSLServerSocket opened = (SSLServerSocket) ssl.getServerSocketFactory().createServerSocket(PORT, 1);
+            SSLServerSocket opened = openServerSocket(ssl);
             synchronized (connectionLock) {
                 if (running) serverSocket = opened;
             }
@@ -121,6 +122,21 @@ final class ReceiverServer implements AutoCloseable {
             }
             if (opened != null) try { opened.close(); } catch (IOException ignored) { }
         }
+    }
+
+    private SSLServerSocket openServerSocket(SSLContext ssl) throws IOException, InterruptedException {
+        // A prior session releases its listening socket asynchronously. Wait briefly only
+        // for that specific bind conflict, on receiver-tls; the Activity never waits.
+        long deadline = SystemClock.elapsedRealtime() + 2_000;
+        while (running) {
+            try {
+                return (SSLServerSocket) ssl.getServerSocketFactory().createServerSocket(PORT, 1);
+            } catch (BindException stillClosing) {
+                if (SystemClock.elapsedRealtime() >= deadline) throw stillClosing;
+                Thread.sleep(50);
+            }
+        }
+        throw new IOException("Receptor encerrado");
     }
 
     private void serveClient(SSLSocket socket, ReceiverPlayback.Decoders decoders) {
@@ -176,7 +192,10 @@ final class ReceiverServer implements AutoCloseable {
         } catch (Exception error) {
             if (running && !authenticated && error instanceof SSLException)
                 android.util.Log.w("RoadstarReceiver", "TLS or pairing handshake failed", error);
-            if (running && authenticated) listener.onStatus("Conexão encerrada: " + message(error));
+            if (running && authenticated) {
+                android.util.Log.w("RoadstarReceiver", "Authenticated session ended", error);
+                listener.onStatus("Conexão encerrada: " + message(error));
+            }
         } finally {
             synchronized (connectionLock) {
                 if (playback == active) playback = null;

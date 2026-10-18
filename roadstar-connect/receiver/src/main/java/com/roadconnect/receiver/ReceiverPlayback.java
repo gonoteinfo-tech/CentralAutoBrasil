@@ -150,6 +150,7 @@ final class ReceiverPlayback implements AutoCloseable {
         AudioManager.OnAudioFocusChangeListener focus = change -> {
             AudioTrack current = audioTrack;
             if (change == AudioManager.AUDIOFOCUS_LOSS || change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT) {
+                android.util.Log.i("RoadstarReceiver", "Receiver audio focus lost: " + change);
                 fail();
             } else if (current != null) {
                 try { current.setVolume(change == AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK ? 0.2f : 1f); }

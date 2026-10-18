@@ -1,27 +1,30 @@
 # Roadstar Connect
 
 App Android nativo instalado **no telefone**, com layout escuro, detalhes
-verde-água e quatro abas: Início, Rádios, Navegador e Favoritos.
+verde-água e quatro abas: Início, Rádios, Navegador e Favoritos. O atalho **Espelhar tela**
+envia a tela e o áudio interno permitido para um segundo APK na central Android.
 
 O projeto inclui compilação automatizada pelo GitHub Actions, com testes,
 análise do código e verificação da assinatura do APK. Consulte
 [a validação](docs/test-checklist.md) para os resultados e limites dos testes.
 A imagem conceitual não é uma captura de um app em execução.
 
-**APK 0.1.1 gerado com sucesso — catálogo com 20 rádios:**
-[baixar o ZIP](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072775004/artifacts/12115479407)
-ou consultar [a execução verificada](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39072775004).
+**APKs 0.2.0 — telefone e receptor, com espelhamento e 20 rádios:**
+[baixar os dois APKs no ZIP](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39131858649/artifacts/12137718543)
+ou consultar [a execução de build e testes](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39131858649).
 
 ## O que cada tela oferece
 
-- **Início:** acesso a rádios, YouTube, Maps/Waze, música e ajuda de conexão.
+- **Início:** acesso a rádios, YouTube, Maps/Waze, música, espelhamento e ajuda de conexão.
 - **Rádios:** cadastro de uma transmissão HTTPS direta, edição e exclusão.
 - **Favoritos:** seleção de rádios preferidas, persistidas no telefone.
 - **Navegador:** site oficial do YouTube no telefone, com voltar/avançar,
   recarregar, início, tela cheia e opção para abrir externamente.
 
-No Android Auto, a Roadstar recebe somente o catálogo e os controles de
-**áudio**. O navegador e os vídeos **não aparecem na central**. O YouTube pode
+No Android Auto, a Roadstar recebe o catálogo e os controles de **áudio**.
+Para enviar a tela e o vídeo, instale também o **Roadstar Receptor** na central
+Android e use uma conexão Wi-Fi local, fora do Android Auto. Consulte o
+[passo a passo do espelhamento](docs/espelhamento.md). O YouTube pode
 exigir o navegador externo ou o app oficial para login e determinados vídeos.
 Não há garantia de reprodução de todos os conteúdos. Vídeos devem ser usados
 com o veículo estacionado; o app não detecta o movimento do carro.
@@ -47,8 +50,10 @@ na branch `codex/roadstar-connect-apk`.
 1. Abra [as compilações do Roadstar Connect](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/workflows/roadstar-connect-apk.yml).
 2. Escolha uma execução concluída com sucesso e baixe o artefato
    **Roadstar-Connect-APK**. O download pelo GitHub pode exigir login.
-3. Extraia o ZIP e instale `Roadstar-Connect-0.1.1-debug.apk` no telefone.
-   O arquivo `SHA256SUMS.txt` permite conferir a integridade do APK.
+3. Extraia o ZIP da versão 0.2.0 e instale `Roadstar-Connect-0.2.0-debug.apk`
+   no telefone. Para espelhamento, instale `Roadstar-Receiver-0.2.0-debug.apk`
+   diretamente na central Android 6 ou posterior.
+   O arquivo `SHA256SUMS.txt` permite conferir a integridade dos APKs.
 
 O workflow fica na raiz do repositório, em
 `.github/workflows/roadstar-connect-apk.yml`, e compila a pasta deste app.
@@ -66,7 +71,7 @@ Os downloads ficam disponíveis por 30 dias após a execução.
 
    ```sh
    sh tools/setup-wrapper.sh
-   sh gradlew :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+   sh gradlew :mirror-core:check :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :receiver:lintDebug :receiver:assembleDebug
    ```
 
    O script baixa o JAR do repositório oficial Gradle e verifica seu SHA-256
@@ -77,11 +82,12 @@ Os downloads ficam disponíveis por 30 dias após a execução.
    instalado para executar `gradle wrapper --gradle-version 8.13`. Depois:
 
    ```bat
-   gradlew.bat :app:testDebugUnitTest :app:lintDebug :app:assembleDebug
+   gradlew.bat :mirror-core:check :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :receiver:lintDebug :receiver:assembleDebug
    ```
 
-4. O APK de teste, **após build concluído**, ficará em:
-   `app/build/outputs/apk/debug/app-debug.apk`.
+4. Os APKs de teste, **após build concluído**, ficarão em:
+   `app/build/outputs/apk/debug/app-debug.apk` e
+   `receiver/build/outputs/apk/debug/receiver-debug.apk`.
 5. Instale no telefone por Android Studio ou:
 
    ```sh
@@ -101,10 +107,11 @@ Com um Java que inclua o módulo de compilação `jdk.compiler`:
 
 ```sh
 sh tools/check-core.sh
+sh tools/check-mirror-core.sh
 ```
 
-Isso executa a validação real das URLs Java. Não testa a reprodução, a WebView,
-as telas Android ou a integração física com a Roadstar.
+Isso executa as validações de URLs, catálogo e protocolo de espelhamento Java.
+Não testa reprodução, WebView, telas Android ou integração física com a Roadstar.
 
 ## Conectar ao Android Auto
 
@@ -123,6 +130,9 @@ Roadstar RS-918BR. Não houve acesso físico a eles durante o desenvolvimento.
 ## Projeto e decisões
 
 - Java 17, minSdk 28, compile/targetSdk 36; Media3 1.8.0; Material 1.13.0.
+- Espelhamento: MediaProjection, AVC em 1080p/720p, áudio PCM mono 48 kHz,
+  TLS com impressão digital conferida e pareamento local de seis dígitos.
+- Receptor Android separado: minSdk 23, sem controle remoto por toque.
 - Catálogo em SharedPreferences; sem servidor, cadastro ou credenciais Google.
 - Browser dedicado ao YouTube; páginas externas seguem para o app apropriado.
 - Sair do navegador destrói sua WebView para interromper mídia oculta e

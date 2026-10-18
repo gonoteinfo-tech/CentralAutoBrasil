@@ -19,6 +19,25 @@ visual gerada é um conceito, não uma captura de um aplicativo em execução.
 - `sh -n gradlew tools/setup-wrapper.sh tools/check-core.sh`: sintaxe dos scripts aprovada.
 - O pacote de fontes contém recursos, instruções e prévia conceitual; o APK é distribuído separadamente pelo GitHub Actions. O projeto não contém um `gradle-wrapper.jar` fictício.
 
+## Espelhamento e dois APKs 0.2.0 — 18/10/2026
+
+- Código compilado: `f04795053d9dd9812bf3e1028dc158e71ebb70e8`, branch `codex/roadstar-connect-apk`.
+- [Execução 39131858649](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39131858649): build concluído, **BUILD SUCCESSFUL in 2m 22s**. Passaram `:mirror-core:check`, testes unitários do telefone, lint e montagem dos dois aplicativos e dos APKs instrumentais.
+- `sh tools/check-core.sh`: **26 verificações de URLs + 6 de migração do catálogo** passaram. `sh tools/check-mirror-core.sh`: **1724 verificações do protocolo e validação** passaram, incluindo frames concorrentes, limites, truncamento, autenticação e formato.
+- Sintaxe Python do destino de testes e **43 XMLs** Android verificados; workflow YAML analisado localmente. Essas verificações não substituem o build Android acima.
+- Assinaturas: os dois comandos `apksigner verify --verbose` retornaram **Verifies**, com esquema v2 válido.
+- [ZIP Roadstar-Connect-APK](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39131858649/artifacts/12137718543): 8.167.655 bytes, contém `Roadstar-Connect-0.2.0-debug.apk`, `Roadstar-Receiver-0.2.0-debug.apk` e `SHA256SUMS.txt`. Disponível por 30 dias após a execução.
+- Revisão independente: corrigida a ordem FORMAT antes do áudio; três códigos incorretos completos acionam espera de 30 segundos; o código muda ao iniciar outra sessão. Consultas de certificado não consomem tentativas. Nenhum bloqueador restante identificado na revisão focada.
+- O primeiro teste do receptor identificou `Incompatible padding mode` no AndroidKeyStore. A chave TLS agora autoriza a operação RSA usada pelo Conscrypt, com alias novo; timeout configurado antes do handshake.
+- Emulador: Android 11/API 30, imagem Google APIs x86_64, perfil Pixel 2 e renderização SwiftShader no GitHub Actions. **Dois testes do receptor + um teste do telefone passaram**; os resultados são separados, não um teste de dois aparelhos físicos.
+- Receptor: TLS com certificado do AndroidKeyStore, pareamento, decodificação AVC 1280×720, pixel vermelho observado na SurfaceView, AudioTrack ativo e encerramento da conexão ao fechar a Activity. O teste negativo rejeitou uma impressão digital diferente antes de enviar o código. A atividade do AudioTrack não comprova volume ou sincronismo percebido em alto-falantes reais.
+- Telefone: fluxo real de conferência do certificado, consentimento MediaProjection, serviço de primeiro plano e AudioPlaybackCapture. O destino TLS local recebeu FORMAT 1920×1080 antes da mídia, **26 frames de vídeo, 145 de áudio e 210.848 amostras PCM não nulas**. A ação Parar encerrou a sessão e a conexão. O teste não grava tela nem amostras de áudio.
+- O teste do receptor revelou e permitiu corrigir fechamento TLS na thread principal. O cleanup agora usa referências da sessão antiga em uma thread própria; o reinício aguarda brevemente apenas conflitos de porta. A revisão focada confirmou as correções.
+- O gerador sintético foi corrigido para usar o horário real dos quadros, como a captura do telefone. Forçar timestamps ideais de 30 fps sob carga de renderização de software fabricava atraso. Na execução final, produziu 72 quadros em 5,16 s. Os limites de atraso de 3 segundos, filas e critérios de imagem/áudio foram preservados. **O teste não certifica 30 fps sustentados**, nem no emulador nem na central.
+- Logs: artefato [Roadstar-receptor-emulador](https://github.com/gonoteinfo-tech/CentralAutoBrasil/actions/runs/39131858649/artifacts/12138342899); contém os dois resultados instrumentais e o relatório do destino TLS de teste.
+- Não houve acesso ao telefone Android 17 nem à Roadstar física. Desempenho sustentado, 1080p no hardware real, áudio de cada aplicativo, sincronismo percebido, rotação e bloqueio/reconexão precisam de validação nesses aparelhos. Conteúdo protegido pode impedir imagem ou áudio; não há controle remoto por toque.
+- [Instalação e conexão](espelhamento.md): dois APKs, mesma rede Wi-Fi, fora do Android Auto. A resolução física da central não é aumentada pelo encoder 1080p.
+
 ## Catálogo e APK 0.1.1 — verificação final
 
 - Código compilado: `8ef90d8fb95b15f32e95fbccded6c8714ac27a6a`.

@@ -1,6 +1,7 @@
 package com.roadconnect.receiver;
 
 import android.content.Context;
+import android.os.SystemClock;
 import android.security.keystore.KeyGenParameterSpec;
 import android.security.keystore.KeyProperties;
 import android.view.Surface;
@@ -9,10 +10,12 @@ import com.roadconnect.mirror.MirrorWire;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Inet4Address;
+import java.net.SocketTimeoutException;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.cert.Certificate;
@@ -23,6 +26,7 @@ import java.math.BigInteger;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLSocket;
 import javax.security.auth.x500.X500Principal;
@@ -30,7 +34,7 @@ import javax.security.auth.x500.X500Principal;
 /** A single authenticated sender, TLS 1.2+, and no remote input or external server. */
 final class ReceiverServer implements AutoCloseable {
     static final int PORT = 8999;
-    private static final String KEY_ALIAS = "roadstar_receiver_tls_v1";
+    private static final String KEY_ALIAS = "roadstar_receiver_tls_v2";
     interface Listener {
         void onStatus(String message);
         void onCertificate(String sha256);
@@ -43,6 +47,9 @@ final class ReceiverServer implements AutoCloseable {
     private volatile SSLServerSocket serverSocket;
     private volatile SSLSocket client;
     private volatile ReceiverPlayback playback;
+    // Only the server thread reads/writes these authentication counters.
+    private int failedCodeAttempts;
+    private long codeCooldownUntil;
     
 
     ReceiverServer(Context context, Surface surface, String code, Listener listener) {
@@ -69,10 +76,18 @@ final class ReceiverServer implements AutoCloseable {
             if (allowed.isEmpty()) throw new IOException("TLS 1.2 indisponível nesta central");
             opened.setEnabledProtocols(allowed.toArray(new String[0]));
             opened.setNeedClientAuth(false);
+            opened.setSoTimeout(500);
             if (!running) return;
             listener.onStatus(ready(decoders));
             while (running) {
-                SSLSocket accepted = (SSLSocket) opened.accept();
+                if (codeCooldownUntil != 0 && SystemClock.elapsedRealtime() >= codeCooldownUntil) {
+                    codeCooldownUntil = 0;
+                    failedCodeAttempts = 0;
+                    listener.onStatus(ready(decoders));
+                }
+                SSLSocket accepted;
+                try { accepted = (SSLSocket) opened.accept(); }
+                catch (SocketTimeoutException waiting) { continue; }
                 if (!running) { accepted.close(); break; }
                 client = accepted;
                 // Only RFC 1918 IPv4 addresses can send to the local receiver.
@@ -84,7 +99,7 @@ final class ReceiverServer implements AutoCloseable {
                 }
                 serveClient(accepted, decoders);
                 client = null;
-                if (running) listener.onStatus(ready(decoders));
+                if (running) listener.onStatus(connectionStatus(decoders));
             }
         } catch (Exception error) {
             if (running) listener.onStatus("Não foi possível iniciar: " + message(error));
@@ -98,14 +113,15 @@ final class ReceiverServer implements AutoCloseable {
 
     private void serveClient(SSLSocket socket, ReceiverPlayback.Decoders decoders) {
         boolean authenticated = false;
-        try (SSLSocket ignored = socket;
-             DataInputStream input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
-             DataOutputStream output = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()))) {
+        try (SSLSocket ignored = socket) {
             socket.setSoTimeout(15_000);
             socket.setTcpNoDelay(true);
+            // Conscrypt can handshake inside getInputStream: configure the timeout first.
             socket.startHandshake();
+            DataInputStream input = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+            DataOutputStream output = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
             // A fingerprint-only TLS probe closes here and never appears as an active sender.
-            MirrorWire.readHello(input, code);
+            if (!authenticateHello(input, decoders)) return;
             authenticated = true;
             MirrorWire.writeWelcome(output, decoders.maxWidth, decoders.maxHeight);
             output.flush();
@@ -143,12 +159,47 @@ final class ReceiverServer implements AutoCloseable {
                 }
             }
         } catch (Exception error) {
+            if (running && !authenticated && error instanceof SSLException)
+                android.util.Log.w("RoadstarReceiver", "TLS or pairing handshake failed", error);
             if (running && authenticated) listener.onStatus("Conexão encerrada: " + message(error));
         } finally {
             ReceiverPlayback old = playback;
             playback = null;
             if (old != null) old.close();
         }
+    }
+
+    private boolean authenticateHello(DataInputStream input, ReceiverPlayback.Decoders decoders)
+            throws IOException, InterruptedException {
+        if (SystemClock.elapsedRealtime() < codeCooldownUntil) {
+            listener.onStatus(connectionStatus(decoders));
+            return false;
+        }
+        // Count only a complete HELLO. Certificate probes and rejected TLS handshakes do
+        // not supply these ten bytes, so neither consumes a pairing attempt.
+        byte[] hello = new byte[10];
+        input.readFully(hello);
+        try {
+            MirrorWire.readHello(new DataInputStream(new ByteArrayInputStream(hello)), code);
+        } catch (IOException wrongCode) {
+            failedCodeAttempts++;
+            if (failedCodeAttempts >= 3) codeCooldownUntil = SystemClock.elapsedRealtime() + 30_000;
+            listener.onStatus(connectionStatus(decoders));
+            // A small bounded delay also limits retries before the three-attempt cutoff.
+            if (running) Thread.sleep(250);
+            return false;
+        }
+        failedCodeAttempts = 0;
+        return true;
+    }
+
+    private String connectionStatus(ReceiverPlayback.Decoders decoders) {
+        long remaining = codeCooldownUntil - SystemClock.elapsedRealtime();
+        if (remaining > 0) return "Muitas tentativas de código • aguarde "
+                + ((remaining + 999) / 1000) + " s e confira o código na central";
+        if (failedCodeAttempts > 0) return "Código incorreto • tentativas restantes: "
+                + (3 - failedCodeAttempts) + " • confira os seis dígitos";
+        return ready(decoders);
     }
 
     private SSLContext createTlsContext() throws Exception {
@@ -160,9 +211,10 @@ final class ReceiverServer implements AutoCloseable {
             generator.initialize(new KeyGenParameterSpec.Builder(KEY_ALIAS,
                     KeyProperties.PURPOSE_SIGN | KeyProperties.PURPOSE_DECRYPT)
                     .setKeySize(2048)
-                    .setDigests(KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
+                    .setDigests(KeyProperties.DIGEST_NONE, KeyProperties.DIGEST_SHA256, KeyProperties.DIGEST_SHA512)
                     .setSignaturePaddings(KeyProperties.SIGNATURE_PADDING_RSA_PKCS1)
-                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
+                    // Conscrypt hashes/pads TLS signatures itself and delegates the raw RSA operation.
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE, KeyProperties.ENCRYPTION_PADDING_RSA_PKCS1)
                     .setCertificateSubject(new X500Principal("CN=RoadstarReceiver"))
                     .setCertificateSerialNumber(BigInteger.ONE)
                     .setCertificateNotBefore(new Date(now - 86_400_000L))

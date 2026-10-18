@@ -31,6 +31,7 @@ public final class ReceiverActivity extends Activity implements SurfaceHolder.Ca
     private TextView status;
     private TextView addresses;
     private TextView fingerprint;
+    private TextView codeView;
     private Button control;
     private LinearLayout content;
     private View connectionPanel;
@@ -80,7 +81,7 @@ public final class ReceiverActivity extends Activity implements SurfaceHolder.Ca
         status.setId(R.id.receiver_status);
         addresses = addText(panel, "", 14, Color.LTGRAY);
         addText(panel, "Código desta sessão", 13, Color.LTGRAY);
-        TextView codeView = addText(panel, code, 30, MINT);
+        codeView = addText(panel, code, 30, MINT);
         codeView.setId(R.id.receiver_code);
         addText(panel, "Confira esta impressão SHA-256 no telefone antes de autorizar:", 12, Color.LTGRAY);
         fingerprint = addText(panel, "Gerando certificado…", 11, Color.WHITE);
@@ -143,6 +144,12 @@ public final class ReceiverActivity extends Activity implements SurfaceHolder.Ca
     private void startReceiver() {
         if (!started || !enabled || server != null || !video.getHolder().getSurface().isValid()) return;
         int generation = ++serverGeneration;
+        // Each explicit restart, return to this screen or new surface is a new pairing session.
+        // A probe or a bad code keeps the current displayed code stable.
+        String previous = code;
+        do { code = String.format(Locale.US, "%06d", new SecureRandom().nextInt(1_000_000)); }
+        while (code.equals(previous));
+        codeView.setText(code);
         server = new ReceiverServer(getApplicationContext(), video.getHolder().getSurface(), code,
                 new ReceiverServer.Listener() {
                     @Override public void onStatus(String message) {

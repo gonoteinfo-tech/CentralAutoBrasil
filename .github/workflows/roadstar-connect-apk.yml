@@ -50,7 +50,7 @@ jobs:
         run: |
           sh tools/check-core.sh
           sh tools/check-mirror-core.sh
-          gradle --no-daemon :mirror-core:check :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :receiver:lintDebug :receiver:assembleDebug :receiver:assembleDebugAndroidTest --stacktrace
+          gradle --no-daemon :mirror-core:check :app:testDebugUnitTest :app:lintDebug :app:assembleDebug :app:assembleDebugAndroidTest :receiver:lintDebug :receiver:assembleDebug :receiver:assembleDebugAndroidTest --stacktrace
 
       - name: Verificar assinatura e preparar download
         run: |
@@ -75,6 +75,14 @@ jobs:
         with:
           name: Roadstar-Receiver-testes
           path: roadstar-connect/receiver/build/outputs/apk/androidTest/debug/receiver-debug-androidTest.apk
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Guardar teste do transmissor
+        uses: actions/upload-artifact@v4
+        with:
+          name: Roadstar-Transmissor-testes
+          path: roadstar-connect/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
           if-no-files-found: error
           retention-days: 14
 
@@ -116,6 +124,16 @@ jobs:
         with:
           name: Roadstar-Receiver-testes
           path: roadstar-connect/test-apks
+      - uses: actions/download-artifact@v4
+        with:
+          name: Roadstar-Transmissor-testes
+          path: roadstar-connect/test-apks
+      - name: Preparar destino local do teste de captura
+        run: |
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/mirror-test-key.pem -out /tmp/mirror-test-cert.pem -days 1 -subj /CN=RoadstarSmoke
+          openssl x509 -in /tmp/mirror-test-cert.pem -outform DER | sha256sum | cut -d ' ' -f 1 > roadstar-connect/sink-fingerprint.txt
+          python3 roadstar-connect/tools/mirror-sender-sink.py --cert /tmp/mirror-test-cert.pem --key /tmp/mirror-test-key.pem --report roadstar-connect/sender-sink-report.json > roadstar-connect/sender-sink.log 2>&1 &
+          echo $! > roadstar-connect/sender-sink.pid
       - name: Executar teste de TLS, video e audio
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -124,7 +142,7 @@ jobs:
           arch: x86_64
           profile: pixel_2
           disable-animations: true
-          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim -camera-back none -camera-front none -memory 2048
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -no-boot-anim -camera-back none -camera-front none -memory 2048
           script: |
             adb install -r roadstar-connect/test-apks/Roadstar-Receiver-0.2.0-debug.apk
             adb install -r roadstar-connect/test-apks/receiver-debug-androidTest.apk
@@ -133,7 +151,17 @@ jobs:
             adb shell am instrument -w -r com.roadconnect.receiver.test/androidx.test.runner.AndroidJUnitRunner > roadstar-connect/instrumentation.log
             adb logcat -d > roadstar-connect/receiver-logcat.txt
             cat roadstar-connect/instrumentation.log
+            python3 -c "from pathlib import Path; p=Path('roadstar-connect/receiver-logcat.txt'); print('\n'.join([l for l in p.read_text().splitlines() if any(t in l for t in ['RoadstarReceiver','CryptoUpcalls','AndroidRuntime','TestRunner'])][-120:]))"
             python3 -c "from pathlib import Path; s=Path('roadstar-connect/instrumentation.log').read_text(); assert 'OK (' in s and 'FAILURES!!!' not in s, s"
+            adb install -r roadstar-connect/test-apks/Roadstar-Connect-0.2.0-debug.apk
+            adb install -r roadstar-connect/test-apks/app-debug-androidTest.apk
+            adb shell input keyevent 82
+            adb shell am instrument -w -r -e receiverPin "$(cat roadstar-connect/sink-fingerprint.txt)" com.roadconnect.app.test/androidx.test.runner.AndroidJUnitRunner > roadstar-connect/sender-instrumentation.log
+            adb logcat -d > roadstar-connect/sender-logcat.txt
+            cat roadstar-connect/sender-instrumentation.log
+            python3 -c "from pathlib import Path; p=Path('roadstar-connect/sender-logcat.txt'); print('\n'.join([l for l in p.read_text().splitlines() if any(t in l for t in ['Roadstar','AndroidRuntime','TestRunner','MediaProjection','AudioRecord'])][-140:]))"
+            python3 -c "from pathlib import Path; s=Path('roadstar-connect/sender-instrumentation.log').read_text(); assert 'OK (' in s and 'FAILURES!!!' not in s, s"
+            python3 -c "import json; from pathlib import Path; r=json.loads(Path('roadstar-connect/sender-sink-report.json').read_text()); assert r['ok'], r; print(r)"
       - name: Guardar resultado no emulador
         if: always()
         uses: actions/upload-artifact@v4
@@ -142,5 +170,9 @@ jobs:
           path: |
             roadstar-connect/instrumentation.log
             roadstar-connect/receiver-logcat.txt
+            roadstar-connect/sender-instrumentation.log
+            roadstar-connect/sender-logcat.txt
+            roadstar-connect/sender-sink-report.json
+            roadstar-connect/sender-sink.log
           if-no-files-found: ignore
           retention-days: 14
